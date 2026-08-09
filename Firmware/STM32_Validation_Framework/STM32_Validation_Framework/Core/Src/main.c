@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,9 +41,15 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+
+static uint8_t uart_rx_buffer[32];
+static uint8_t uart_rx_byte;
+static uint8_t uart_rx_index = 0;
 
 /* USER CODE END PV */
 
@@ -50,12 +57,76 @@ UART_HandleTypeDef huart1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void UART_SendString(const char *str);
+static void Test_UART(void);
+static void Test_GPIO(void);
+static void Test_ADC(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+static void UART_SendString(const char *str)
+{
+    HAL_UART_Transmit(&huart1,
+                      (uint8_t *)str,
+                      strlen(str),
+                      HAL_MAX_DELAY);
+}
+
+static void Test_UART(void)
+{
+    UART_SendString("[TEST:UART][RESULT:PASS]\r\n");
+}
+
+static void Test_GPIO(void)
+{
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+
+    UART_SendString("[TEST:GPIO][RESULT:PASS]\r\n");
+}
+
+static void Process_Command(char *command)
+{
+    if (strcmp(command, "HELP") == 0)
+    {
+        UART_SendString("\r\n");
+        UART_SendString("STM32 VALIDATION FRAMEWORK\r\n");
+        UART_SendString("Commands:\r\n");
+        UART_SendString("HELP\r\n");
+        UART_SendString("TEST UART\r\n");
+        UART_SendString("TEST GPIO\r\n");
+        UART_SendString("TEST ADC\r\n");
+        UART_SendString("TEST ALL\r\n");
+        UART_SendString("\r\n");
+    }
+    else if (strcmp(command, "TEST UART") == 0)
+    {
+        Test_UART();
+    }
+    else if (strcmp(command, "TEST GPIO") == 0)
+    {
+        Test_GPIO();
+    }
+    else if (strcmp(command, "TEST ADC") == 0)
+    {
+        Test_ADC();
+    }
+    else if (strcmp(command, "TEST ALL") == 0)
+    {
+        Test_UART();
+        Test_GPIO();
+        Test_ADC();
+
+        UART_SendString("[TEST:ALL][RESULT:PASS]\r\n");
+    }
+    else
+    {
+        UART_SendString("[ERROR][UNKNOWN_COMMAND]\r\n");
+    }
+}
 
 /* USER CODE END 0 */
 
@@ -89,7 +160,16 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+
+  UART_SendString("\r\n====================================\r\n");
+  UART_SendString("STM32 VALIDATION FRAMEWORK\r\n");
+  UART_SendString("Firmware Core v0.2\r\n");
+  UART_SendString("UART: 115200 8-N-1\r\n");
+  UART_SendString("ADC: 12-bit / PA0\r\n");
+  UART_SendString("Type HELP for commands\r\n");
+  UART_SendString("====================================\r\n\r\n");
 
   /* USER CODE END 2 */
 
@@ -97,9 +177,42 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+      /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+      /* USER CODE BEGIN 3 */
+
+      if (HAL_UART_Receive(&huart1,
+                           &uart_rx_byte,
+                           1,
+                           HAL_MAX_DELAY) == HAL_OK)
+      {
+          if (uart_rx_byte == '\r' || uart_rx_byte == '\n')
+          {
+              if (uart_rx_index > 0)
+              {
+                  uart_rx_buffer[uart_rx_index] = '\0';
+
+                  Process_Command((char *)uart_rx_buffer);
+
+                  uart_rx_index = 0;
+                  memset(uart_rx_buffer, 0, sizeof(uart_rx_buffer));
+              }
+          }
+          else
+          {
+              if (uart_rx_index < sizeof(uart_rx_buffer) - 1)
+              {
+                  uart_rx_buffer[uart_rx_index++] = uart_rx_byte;
+              }
+              else
+              {
+                  uart_rx_index = 0;
+                  memset(uart_rx_buffer, 0, sizeof(uart_rx_buffer));
+
+                  UART_SendString("[ERROR][COMMAND_TOO_LONG]\r\n");
+              }
+          }
+      }
   }
   /* USER CODE END 3 */
 }
@@ -112,6 +225,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -138,6 +252,59 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV2;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Common config
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -206,6 +373,67 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+static void Test_ADC(void)
+{
+    uint32_t sum = 0;
+    uint16_t min = 4095;
+    uint16_t max = 0;
+    uint16_t sample;
+    uint32_t average;
+    uint32_t voltage_mv;
+    char message[96];
+
+    for (uint8_t i = 0; i < 20; i++)
+    {
+        if (HAL_ADC_Start(&hadc1) != HAL_OK)
+        {
+            UART_SendString("[TEST:ADC][RESULT:FAIL]\r\n");
+            return;
+        }
+
+        if (HAL_ADC_PollForConversion(&hadc1, 100) != HAL_OK)
+        {
+            HAL_ADC_Stop(&hadc1);
+            UART_SendString("[TEST:ADC][RESULT:FAIL]\r\n");
+            return;
+        }
+
+        sample = HAL_ADC_GetValue(&hadc1);
+
+        HAL_ADC_Stop(&hadc1);
+
+        sum += sample;
+
+        if (sample < min)
+        {
+            min = sample;
+        }
+
+        if (sample > max)
+        {
+            max = sample;
+        }
+
+        HAL_Delay(5);
+    }
+
+    average = sum / 20;
+
+    voltage_mv = (average * 3300UL) / 4095UL;
+
+    UART_SendString("[TEST:ADC][RESULT:PASS]\r\n");
+
+    snprintf(message,
+             sizeof(message),
+             "[ADC:AVG:%lu][MIN:%u][MAX:%u][MV:%lu]\r\n",
+             average,
+             min,
+             max,
+             voltage_mv);
+
+    UART_SendString(message);
+}
 
 /* USER CODE END 4 */
 
