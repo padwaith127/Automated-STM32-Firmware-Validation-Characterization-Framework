@@ -34,3 +34,5 @@ env/
 *.tmp
 *.bak
 *.swp
+# Runtime-generated validation log
+Python/validation_results.csv
