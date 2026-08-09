@@ -2,11 +2,23 @@
 
 
 
+!\[STM32](https://img.shields.io/badge/MCU-STM32F103C8T6-blue)
+
+!\[Language](https://img.shields.io/badge/Firmware-Embedded%20C-green)
+
+!\[Python](https://img.shields.io/badge/Automation-Python-yellow)
+
+!\[Protocols](https://img.shields.io/badge/Protocols-UART%20%7C%20I2C%20%7C%20SPI-orange)
+
+!\[Status](https://img.shields.io/badge/Validation-PASS-success)
+
+
+
 An automated embedded firmware validation and characterization framework built around the \*\*STM32F103C8T6 (Blue Pill)\*\*.
 
 
 
-The framework combines STM32 firmware-based peripheral validation with a Python automation layer to execute tests, capture structured results, perform ADC characterization, and generate validation evidence.
+The project combines \*\*STM32 Embedded C firmware\*\*, \*\*UART-based command control\*\*, and \*\*Python/PySerial automation\*\* to validate MCU peripherals, capture structured test results, and perform real ADC characterization.
 
 
 
@@ -14,15 +26,15 @@ The framework combines STM32 firmware-based peripheral validation with a Python 
 
 
 
-\## Overview
+\## Project Overview
 
 
 
-This project demonstrates a practical firmware validation workflow for an STM32-based embedded system.
+This project implements a hardware validation workflow similar to an embedded firmware validation environment.
 
 
 
-The STM32 firmware provides command-driven validation of:
+The STM32 firmware provides command-driven tests for:
 
 
 
@@ -30,7 +42,7 @@ The STM32 firmware provides command-driven validation of:
 
 \- GPIO
 
-\- 12-bit ADC
+\- ADC
 
 \- I2C
 
@@ -38,11 +50,11 @@ The STM32 firmware provides command-driven validation of:
 
 
 
-A Python automation layer communicates with the STM32 through UART and automatically:
+A Python automation layer communicates with the STM32 over UART and:
 
 
 
-1\. Sends validation commands
+1\. Executes peripheral validation tests
 
 2\. Captures STM32 responses
 
@@ -50,9 +62,9 @@ A Python automation layer communicates with the STM32 through UART and automatic
 
 4\. Extracts measurement data
 
-5\. Generates structured CSV logs
+5\. Generates CSV validation logs
 
-6\. Performs ADC characterization
+6\. Collects real ADC characterization data
 
 7\. Generates ADC characterization plots
 
@@ -62,73 +74,51 @@ A Python automation layer communicates with the STM32 through UART and automatic
 
 
 
-\## System Architecture
+\## Key Results
+
+
+
+| Test | Result | Measurement |
+
+|---|---|---|
+
+| UART | PASS | 115200 8-N-1 |
+
+| GPIO | PASS | GPIO validation |
+
+| ADC | PASS | 12-bit ADC |
+
+| I2C | PASS | Device detected at `0x48` |
+
+| SPI | PASS | ADXL345 ID `0xE5` |
+
+| Overall | \*\*PASS\*\* | Automated validation |
+
+
+
+Example automated result:
 
 
 
 ```text
 
-&#x20;                   ┌─────────────────────────┐
-
-&#x20;                   │      Python Runner      │
-
-&#x20;                   │                         │
-
-&#x20;                   │  validation\_runner.py   │
-
-&#x20;                   └────────────┬────────────┘
-
-&#x20;                                │
-
-&#x20;                          USB-UART / COM3
-
-&#x20;                                │
-
-&#x20;                                ▼
-
-&#x20;                   ┌─────────────────────────┐
-
-&#x20;                   │      STM32F103C8T6      │
-
-&#x20;                   │       Blue Pill         │
-
-&#x20;                   │                         │
-
-&#x20;                   │  Firmware Validation    │
-
-&#x20;                   │        Core             │
-
-&#x20;                   └────────────┬────────────┘
-
-&#x20;                                │
-
-&#x20;         ┌──────────────────────┼──────────────────────┐
-
-&#x20;         │                      │                      │
-
-&#x20;         ▼                      ▼                      ▼
-
-&#x20;      UART/GPIO               ADC                    I2C
-
-&#x20;                                                     │
-
-&#x20;                                                     ▼
-
-&#x20;                                                 ADS1115
+STM32 VALIDATION TEST REPORT
 
 
 
-&#x20;                                │
+UART    PASS
 
-&#x20;                                ▼
+GPIO    PASS
 
-&#x20;                               SPI
+ADC     PASS
 
-&#x20;                                │
+I2C     PASS
 
-&#x20;                                ▼
+SPI     PASS
 
-&#x20;                             ADXL345
+
+
+OVERALL RESULT: PASS
 
 ```
 
@@ -138,43 +128,53 @@ A Python automation layer communicates with the STM32 through UART and automatic
 
 
 
-\## Hardware
+\# System Architecture
 
 
 
-\### Main Controller
+```text
 
+&#x20;                   Python Automation
 
+&#x20;                          |
 
-\- STM32F103C8T6 Blue Pill
+&#x20;                          | PySerial
 
-\- ARM Cortex-M3
+&#x20;                          | COM3 / 115200
 
-\- 12-bit internal ADC
+&#x20;                          v
 
-\- SPI
+&#x20;               +-----------------------+
 
-\- I2C
+&#x20;               |    STM32F103C8T6      |
 
-\- USART
+&#x20;               |     Validation Core   |
 
+&#x20;               +-----------+-----------+
 
+&#x20;                           |
 
-\### Validation Hardware
+&#x20;         +-----------------+-----------------+
 
+&#x20;         |                 |                 |
 
+&#x20;         v                 v                 v
 
-\- CP2102 USB-to-TTL converter
+&#x20;       UART               ADC               GPIO
 
-\- Potentiometer for ADC characterization
+&#x20;                           |
 
-\- ADS1115 I2C ADC module
+&#x20;                           |
 
-\- ADXL345 accelerometer module
+&#x20;                +----------+----------+
 
-\- Breadboard
+&#x20;                |                     |
 
-\- Jumper wires
+&#x20;                v                     v
+
+&#x20;             I2C / ADS1115       SPI / ADXL345
+
+```
 
 
 
@@ -182,31 +182,55 @@ A Python automation layer communicates with the STM32 through UART and automatic
 
 
 
-\## Peripheral Configuration
+\# Hardware
 
 
 
-| Peripheral | STM32 Interface | Validation Target |
+| Component | Purpose |
+
+|---|---|
+
+| STM32F103C8T6 Blue Pill | Main MCU |
+
+| CP2102 USB-to-TTL | UART communication |
+
+| Potentiometer | ADC characterization |
+
+| ADS1115 | I2C peripheral validation |
+
+| ADXL345 | SPI peripheral validation |
+
+| Breadboard | Hardware integration |
+
+| Jumper wires | Connections |
+
+
+
+\---
+
+
+
+\# STM32 Peripheral Configuration
+
+
+
+| Peripheral | Interface / Pin | Validation |
 
 |---|---|---|
 
-| UART | USART1 | USB-UART communication |
+| USART1 | UART | Communication test |
 
-| ADC | PA0 / ADC1 Channel 0 | Potentiometer |
+| ADC1 | PA0 | ADC validation \& characterization |
 
-| I2C | I2C1 | ADS1115 |
+| GPIO | PC13 | GPIO validation |
 
-| SPI | SPI1 | ADXL345 |
+| I2C1 | I2C | ADS1115 detection |
 
-| GPIO | PC13 | On-board LED |
-
-
-
-\---
+| SPI1 | SPI | ADXL345 device ID |
 
 
 
-\## UART Configuration
+\### UART
 
 
 
@@ -224,105 +248,11 @@ Format   : 8-N-1
 
 
 
-\## SPI / ADXL345
+\# Firmware Commands
 
 
 
-The ADXL345 is connected to SPI1.
-
-
-
-| STM32 | ADXL345 |
-
-|---|---|
-
-| PA5 | SCLK |
-
-| PA6 | SDO / MISO |
-
-| PA7 | SDI / MOSI |
-
-| PB0 | CS |
-
-| 3.3V | VCC |
-
-| GND | GND |
-
-
-
-The ADXL345 device ID register is validated against:
-
-
-
-```text
-
-0xE5
-
-```
-
-
-
-Example validation result:
-
-
-
-```text
-
-\[TEST:SPI]\[RESULT:PASS]\[DEVID:0xE5]
-
-```
-
-
-
-\---
-
-
-
-\## I2C / ADS1115
-
-
-
-The ADS1115 is connected to the STM32 I2C interface.
-
-
-
-The validation framework detects the device at:
-
-
-
-```text
-
-0x48
-
-```
-
-
-
-Example:
-
-
-
-```text
-
-\[TEST:I2C]\[RESULT:PASS]\[ADDR:0x48]
-
-```
-
-
-
-\---
-
-
-
-\# Firmware Validation
-
-
-
-The STM32 firmware provides a command-line validation interface through UART.
-
-
-
-\## Available Commands
+The STM32 exposes a UART command interface.
 
 
 
@@ -346,11 +276,7 @@ TEST ALL
 
 
 
-\---
-
-
-
-\## Example Firmware Validation
+Example:
 
 
 
@@ -362,7 +288,7 @@ TEST ALL
 
 \[TEST:ADC]\[RESULT:PASS]
 
-\[ADC:AVG:3344]\[MIN:3337]\[MAX:3356]\[MV:2694]
+\[ADC:AVG:3347]\[MIN:3339]\[MAX:3358]\[MV:2697]
 
 \[TEST:I2C]\[RESULT:PASS]\[ADDR:0x48]
 
@@ -382,7 +308,7 @@ TEST ALL
 
 
 
-The internal STM32 ADC is configured as:
+The STM32 internal ADC is configured as:
 
 
 
@@ -402,7 +328,7 @@ Reference  : 3.3 V
 
 
 
-The firmware collects multiple ADC samples and reports:
+The firmware reports:
 
 
 
@@ -438,15 +364,11 @@ Example:
 
 
 
-A potentiometer connected to PA0 was used to generate multiple input-voltage levels.
+A potentiometer was used to generate multiple real input-voltage levels.
 
 
 
-The Python characterization collector captured five real measurement points from the STM32 ADC.
-
-
-
-\## Measured Data
+The Python collector captured the following measurements directly from the STM32 ADC.
 
 
 
@@ -466,7 +388,15 @@ The Python characterization collector captured five real measurement points from
 
 
 
-The characterization dataset is stored at:
+\### ADC Characterization Curve
+
+
+
+!\[STM32 ADC Characterization](Results/stm32\_adc\_characterization.png)
+
+
+
+The corresponding dataset is available at:
 
 
 
@@ -478,31 +408,19 @@ Results/adc\_characterization.csv
 
 
 
-The characterization graph is stored at:
-
-
-
-```text
-
-Results/stm32\_adc\_characterization.png
-
-```
-
-
-
 \---
 
 
 
-\# Automated Python Validation
+\# Python Automation
 
 
 
-The Python automation layer uses \*\*PySerial\*\* to communicate with the STM32 through COM3.
+The Python automation layer uses \*\*Python 3.11\*\* and \*\*PySerial\*\*.
 
 
 
-The main validation script is:
+\## Validation Runner
 
 
 
@@ -514,7 +432,7 @@ Python/validation\_runner.py
 
 
 
-It executes:
+Runs:
 
 
 
@@ -534,11 +452,79 @@ TEST SPI
 
 
 
-and determines the overall validation result.
+and generates an overall validation result.
 
 
 
-\## Example Automated Run
+\---
+
+
+
+\## ADC Collector
+
+
+
+```text
+
+Python/adc\_collector.py
+
+```
+
+
+
+Collects real ADC measurements from the STM32 and stores them in CSV format.
+
+
+
+\---
+
+
+
+\## ADC Characterization
+
+
+
+```text
+
+Python/adc\_characterization.py
+
+```
+
+
+
+Processes ADC characterization measurements.
+
+
+
+\---
+
+
+
+\## Graph Generator
+
+
+
+```text
+
+Python/generate\_adc\_graph.py
+
+```
+
+
+
+Generates the ADC characterization graph from the collected dataset.
+
+
+
+\---
+
+
+
+\# Automated Validation Output
+
+
+
+Example Python execution:
 
 
 
@@ -578,8 +564,6 @@ STM32: \[ADC:AVG:3347]\[MIN:3339]\[MAX:3358]\[MV:2697]
 
 Result: PASS
 
-Data  : AVG=3347, MIN=3339, MAX=3358, MV=2697
-
 
 
 Running I2C...
@@ -587,8 +571,6 @@ Running I2C...
 STM32: \[TEST:I2C]\[RESULT:PASS]\[ADDR:0x48]
 
 Result: PASS
-
-Data  : ADDR=0x48
 
 
 
@@ -598,8 +580,6 @@ STM32: \[TEST:SPI]\[RESULT:PASS]\[DEVID:0xE5]
 
 Result: PASS
 
-Data  : DEVID=0xE5
-
 
 
 \## OVERALL RESULT: PASS
@@ -608,33 +588,57 @@ Data  : DEVID=0xE5
 
 
 
+\### Python Validation Evidence
+
+
+
+!\[Python Automated Validation](Results/python\_automated\_validation\_pass.png)
+
+
+
 \---
 
 
 
-\# Structured Validation Logging
+\# Structured CSV Logging
 
 
 
-Validation results are stored as CSV records containing:
+Validation results are stored in:
 
 
 
-\- Timestamp
+```text
 
-\- Test ID
+Python/validation\_results.csv
 
-\- Test name
+```
 
-\- Command
 
-\- Expected result
 
-\- Actual result
+The log contains:
 
-\- Measurement
 
-\- Error information
+
+```text
+
+timestamp
+
+test\_id
+
+test\_name
+
+command
+
+expected
+
+actual
+
+measurement
+
+error
+
+```
 
 
 
@@ -664,95 +668,7 @@ timestamp,test\_id,test\_name,command,expected,actual,measurement,error
 
 
 
-\# Python Tools
-
-
-
-\## Validation Runner
-
-
-
-```text
-
-Python/validation\_runner.py
-
-```
-
-
-
-Runs the complete UART, GPIO, ADC, I2C and SPI validation sequence.
-
-
-
-\---
-
-
-
-\## ADC Collector
-
-
-
-```text
-
-Python/adc\_collector.py
-
-```
-
-
-
-Collects real ADC measurements from the STM32 through UART and stores the measurements in CSV format.
-
-
-
-\---
-
-
-
-\## ADC Characterization
-
-
-
-```text
-
-Python/adc\_characterization.py
-
-```
-
-
-
-Processes ADC characterization data.
-
-
-
-\---
-
-
-
-\## ADC Graph Generator
-
-
-
-```text
-
-Python/generate\_adc\_graph.py
-
-```
-
-
-
-Generates the ADC characterization graph from the collected CSV data.
-
-
-
-\---
-
-
-
 \# Validation Evidence
-
-
-
-The repository contains captured evidence for the implemented validation and characterization workflow.
 
 
 
@@ -760,7 +676,7 @@ The repository contains captured evidence for the implemented validation and cha
 
 
 
-The firmware was successfully built with:
+Firmware build completed successfully with:
 
 
 
@@ -774,59 +690,23 @@ The firmware was successfully built with:
 
 
 
-Evidence:
+!\[STM32CubeIDE Build Success](Results/stm32\_cubeide\_build\_success.png)
 
 
 
-```text
-
-Results/stm32\_cubeide\_build\_success.png
-
-```
+\---
 
 
 
-\## UART / Peripheral Validation
+\## STM32 UART / Peripheral Validation
 
 
 
-Evidence:
+!\[STM32 UART Validation](Results/stm32\_uart\_validation\_pass.png)
 
 
 
-```text
-
-Results/stm32\_uart\_validation\_pass.png
-
-```
-
-
-
-\## Python Automated Validation
-
-
-
-Evidence:
-
-
-
-```text
-
-Results/python\_automated\_validation\_pass.png
-
-```
-
-
-
-The automated validation demonstrated:
-
-
-
-```text
-
-OVERALL RESULT: PASS
-
-```
+\---
 
 
 
@@ -834,31 +714,7 @@ OVERALL RESULT: PASS
 
 
 
-Evidence:
-
-
-
-```text
-
-Results/stm32\_adc\_characterization.png
-
-```
-
-
-
-\## GitHub Repository
-
-
-
-Repository evidence:
-
-
-
-```text
-
-Results/github\_repository.png
-
-```
+!\[ADC Characterization](Results/stm32\_adc\_characterization.png)
 
 
 
@@ -888,11 +744,7 @@ Automated-STM32-Firmware-Validation-Characterization-Framework/
 
 │           │   └── Src/
 
-│           │
-
 │           ├── Drivers/
-
-│           │
 
 │           └── STM32\_Validation\_Framework.ioc
 
@@ -906,7 +758,9 @@ Automated-STM32-Firmware-Validation-Characterization-Framework/
 
 │   ├── adc\_characterization.py
 
-│   └── generate\_adc\_graph.py
+│   ├── generate\_adc\_graph.py
+
+│   └── validation\_results.csv
 
 │
 
@@ -938,11 +792,79 @@ Automated-STM32-Firmware-Validation-Characterization-Framework/
 
 
 
+\# Tools \& Technologies
+
+
+
+\### Firmware
+
+
+
+\- Embedded C
+
+\- STM32 HAL
+
+\- STM32F103C8T6
+
+\- ARM Cortex-M3
+
+\- STM32CubeMX
+
+\- STM32CubeIDE
+
+\- STM32CubeProgrammer
+
+
+
+\### Communication
+
+
+
+\- UART
+
+\- I2C
+
+\- SPI
+
+
+
+\### Python
+
+
+
+\- Python 3.11
+
+\- PySerial
+
+\- CSV
+
+\- ADC data processing
+
+\- Data visualization
+
+
+
+\### Validation Tools
+
+
+
+\- Tera Term
+
+\- Git
+
+\- GitHub
+
+\- STM32CubeIDE
+
+\- STM32CubeProgrammer
+
+
+
+\---
+
+
+
 \# Development Workflow
-
-
-
-The project follows a firmware validation workflow:
 
 
 
@@ -960,7 +882,7 @@ Peripheral Initialization
 
 &#x20;     ↓
 
-Individual Peripheral Tests
+Peripheral Validation
 
 &#x20;     ↓
 
@@ -992,81 +914,9 @@ Git Version Control
 
 &#x20;     ↓
 
-GitHub Repository
+GitHub
 
 ```
-
-
-
-\---
-
-
-
-\# Technologies Used
-
-
-
-\## Firmware
-
-
-
-\- Embedded C
-
-\- STM32 HAL
-
-\- STM32F103C8T6
-
-\- ARM Cortex-M3
-
-\- STM32CubeMX
-
-\- STM32CubeIDE
-
-\- STM32CubeProgrammer
-
-
-
-\## Communication Protocols
-
-
-
-\- UART
-
-\- I2C
-
-\- SPI
-
-
-
-\## Python Automation
-
-
-
-\- Python 3.11
-
-\- PySerial
-
-\- CSV logging
-
-\- ADC characterization
-
-\- Data visualization
-
-
-
-\## Development and Validation Tools
-
-
-
-\- Git
-
-\- GitHub
-
-\- Tera Term
-
-\- STM32CubeIDE
-
-\- STM32CubeProgrammer
 
 
 
@@ -1078,11 +928,9 @@ GitHub Repository
 
 
 
-The framework was developed incrementally using Git.
-
-
-
 ```text
+
+dc9271a  Add comprehensive project documentation
 
 202d063  Add validation evidence and ADC characterization results
 
@@ -1106,39 +954,37 @@ The framework was developed incrementally using Git.
 
 
 
-Potential extensions include:
+Potential future extensions include:
 
 
-
-\- Automated GPIO electrical characterization
-
-\- ADC linearity and error analysis
 
 \- ADC INL/DNL characterization
 
-\- Automated SPI/I2C timing validation
+\- ADC linearity and error analysis
 
-\- Sensor register-level validation
+\- GPIO electrical characterization
 
-\- Oscilloscope and logic-analyzer integration
+\- SPI/I2C timing validation
 
-\- Automated HTML/PDF test reports
+\- Automated oscilloscope integration
+
+\- Logic analyzer integration
+
+\- HTML/PDF automated test reports
 
 \- Hardware-in-the-loop regression testing
 
-\- Additional STM32 peripheral validation
-
-\- Timer and PWM validation
+\- Timer/PWM validation
 
 \- CAN validation
 
 \- DAC validation
 
-\- Automated regression-test execution
+\- Additional STM32 peripheral validation
 
 
 
-These items are planned extensions and are not represented as currently implemented features.
+These are future extensions and are not claimed as currently implemented.
 
 
 
@@ -1150,41 +996,49 @@ These items are planned extensions and are not represented as currently implemen
 
 
 
-The current implementation demonstrates:
+The framework successfully demonstrates an automated STM32 validation workflow combining:
 
 
 
-\- STM32 firmware bring-up
+\- Firmware bring-up
 
-\- UART command-driven validation
+\- Peripheral validation
 
-\- GPIO validation
+\- UART command control
 
-\- Internal ADC validation
+\- Python automation
 
-\- I2C device detection
+\- PASS/FAIL evaluation
 
-\- SPI device identification
-
-\- Python-based automated testing
-
-\- Structured validation logging
+\- Structured CSV logging
 
 \- Real ADC characterization
 
-\- ADC data visualization
+\- Data visualization
 
-\- Git-based version control
+\- Git version control
 
-\- GitHub-based project management
+\- GitHub documentation
 
 
 
-The framework achieved a complete automated validation result of:
+Final automated validation:
 
 
 
 ```text
+
+UART    PASS
+
+GPIO    PASS
+
+ADC     PASS
+
+I2C     PASS
+
+SPI     PASS
+
+
 
 OVERALL RESULT: PASS
 
@@ -1210,9 +1064,5 @@ NIT Calicut
 
 
 
-GitHub:
-
-
-
-https://github.com/padwaith127
+GitHub: \[padwaith127](https://github.com/padwaith127)
 
