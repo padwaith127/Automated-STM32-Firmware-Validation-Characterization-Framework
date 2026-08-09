@@ -32,7 +32,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define ADXL345_CS_GPIO_Port GPIOB
+#define ADXL345_CS_Pin       GPIO_PIN_0
+#define ADXL345_DEVICE_ID    0xE5
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -42,6 +44,10 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+
+I2C_HandleTypeDef hi2c1;
+
+SPI_HandleTypeDef hspi1;
 
 UART_HandleTypeDef huart1;
 
@@ -58,11 +64,18 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
+
 static void UART_SendString(const char *str);
+static void Process_Command(char *command);
 static void Test_UART(void);
 static void Test_GPIO(void);
 static void Test_ADC(void);
+static void Test_I2C(void);
+static void Test_SPI(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -99,6 +112,8 @@ static void Process_Command(char *command)
         UART_SendString("TEST UART\r\n");
         UART_SendString("TEST GPIO\r\n");
         UART_SendString("TEST ADC\r\n");
+        UART_SendString("TEST I2C\r\n");
+        UART_SendString("TEST SPI\r\n");
         UART_SendString("TEST ALL\r\n");
         UART_SendString("\r\n");
     }
@@ -114,11 +129,21 @@ static void Process_Command(char *command)
     {
         Test_ADC();
     }
+    else if (strcmp(command, "TEST I2C") == 0)
+    {
+        Test_I2C();
+    }
+    else if (strcmp(command, "TEST SPI") == 0)
+    {
+        Test_SPI();
+    }
     else if (strcmp(command, "TEST ALL") == 0)
     {
         Test_UART();
         Test_GPIO();
         Test_ADC();
+        Test_I2C();
+        Test_SPI();
 
         UART_SendString("[TEST:ALL][RESULT:PASS]\r\n");
     }
@@ -161,11 +186,13 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_ADC1_Init();
+  MX_I2C1_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
   UART_SendString("\r\n====================================\r\n");
   UART_SendString("STM32 VALIDATION FRAMEWORK\r\n");
-  UART_SendString("Firmware Core v0.2\r\n");
+  UART_SendString("Firmware Core v0.3\r\n");
   UART_SendString("UART: 115200 8-N-1\r\n");
   UART_SendString("ADC: 12-bit / PA0\r\n");
   UART_SendString("Type HELP for commands\r\n");
@@ -177,9 +204,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      /* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-      /* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 
       if (HAL_UART_Receive(&huart1,
                            &uart_rx_byte,
@@ -308,6 +335,78 @@ static void MX_ADC1_Init(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -356,9 +455,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
 
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
@@ -367,12 +470,68 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PB0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+static void Test_SPI(void)
+{
+    uint8_t tx_data[2];
+    uint8_t rx_data[2];
+    uint8_t device_id;
+
+    tx_data[0] = 0x80 | 0x00;   // Read command, register 0x00
+    tx_data[1] = 0x00;
+
+    HAL_GPIO_WritePin(ADXL345_CS_GPIO_Port,
+                      ADXL345_CS_Pin,
+                      GPIO_PIN_RESET);
+
+    if (HAL_SPI_TransmitReceive(&hspi1,
+                                tx_data,
+                                rx_data,
+                                2,
+                                100) != HAL_OK)
+    {
+        HAL_GPIO_WritePin(ADXL345_CS_GPIO_Port,
+                          ADXL345_CS_Pin,
+                          GPIO_PIN_SET);
+
+        UART_SendString("[TEST:SPI][RESULT:FAIL][HAL]\r\n");
+        return;
+    }
+
+    HAL_GPIO_WritePin(ADXL345_CS_GPIO_Port,
+                      ADXL345_CS_Pin,
+                      GPIO_PIN_SET);
+
+    device_id = rx_data[1];
+
+    if (device_id == ADXL345_DEVICE_ID)
+    {
+        UART_SendString("[TEST:SPI][RESULT:PASS][DEVID:0xE5]\r\n");
+    }
+    else
+    {
+        char message[64];
+
+        snprintf(message,
+                 sizeof(message),
+                 "[TEST:SPI][RESULT:FAIL][DEVID:0x%02X]\r\n",
+                 device_id);
+
+        UART_SendString(message);
+    }
+}
 
 static void Test_ADC(void)
 {
@@ -433,6 +592,25 @@ static void Test_ADC(void)
              voltage_mv);
 
     UART_SendString(message);
+}
+
+static void Test_I2C(void)
+{
+    HAL_StatusTypeDef status;
+
+    status = HAL_I2C_IsDeviceReady(&hi2c1,
+                                   (0x48 << 1),
+                                   3,
+                                   100);
+
+    if (status == HAL_OK)
+    {
+        UART_SendString("[TEST:I2C][RESULT:PASS][ADDR:0x48]\r\n");
+    }
+    else
+    {
+        UART_SendString("[TEST:I2C][RESULT:FAIL][ADDR:0x48]\r\n");
+    }
 }
 
 /* USER CODE END 4 */
