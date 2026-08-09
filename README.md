@@ -1,20 +1,23 @@
-\# Automated STM32 Firmware Validation \& Characterization Framework
+# Automated STM32 Firmware Validation & Characterization Framework
 
+> An automated embedded firmware validation and characterization framework built around the STM32F103C8T6 (Blue Pill).
 
+The project combines **STM32 Embedded C firmware**, **UART-based command control**, and **Python/PySerial automation** to validate MCU peripherals, capture structured test results, and perform real ADC characterization.
 
-!\[STM32](https://img.shields.io/badge/MCU-STM32F103C8T6-blue)
+## Project Status
 
-!\[Language](https://img.shields.io/badge/Firmware-Embedded%20C-green)
-
-!\[Python](https://img.shields.io/badge/Automation-Python-yellow)
-
-!\[Protocols](https://img.shields.io/badge/Protocols-UART%20%7C%20I2C%20%7C%20SPI-orange)
-
-!\[Status](https://img.shields.io/badge/Validation-PASS-success)
-
-
-
-An automated embedded firmware validation and characterization framework built around the \*\*STM32F103C8T6 (Blue Pill)\*\*.
+| Area | Status |
+|---|---|
+| STM32 Firmware | ✅ Complete |
+| UART Validation | ✅ PASS |
+| GPIO Validation | ✅ PASS |
+| ADC Validation | ✅ PASS |
+| I2C Validation | ✅ PASS |
+| SPI Validation | ✅ PASS |
+| Python Automation | ✅ Complete |
+| CSV Test Logging | ✅ Complete |
+| Real ADC Characterization | ✅ Complete |
+| GitHub Documentation | ✅ Complete |
 
 
 
